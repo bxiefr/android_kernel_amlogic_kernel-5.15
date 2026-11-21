@@ -163,4 +163,4 @@ x509.genkey
 sphinx_*/
 
 # amlogic drivers
-/common_drivers/
+# (common_drivers is vendored into this tree, so it is no longer ignored)

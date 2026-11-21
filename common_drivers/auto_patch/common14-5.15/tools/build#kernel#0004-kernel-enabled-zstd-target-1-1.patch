@@ -1,0 +1,73 @@
+From 3a3f061b922c684e85d4763f06474e56fc03b9ef Mon Sep 17 00:00:00 2001
+From: Tao Zeng <tao.zeng@amlogic.com>
+Date: Tue, 9 Apr 2024 12:41:35 +0800
+Subject: [PATCH] kernel: enabled zstd target [1/1]
+
+PD#SWPL-163856
+
+Problem:
+Image.zstd is not supported
+
+Solution:
+add it
+
+Verify:
+bm201
+
+Change-Id: Iff279d164cf130fdcaea821e77beb8a4cf0d5348
+Signed-off-by: Tao Zeng <tao.zeng@amlogic.com>
+---
+ kleaf/common_kernels.bzl     | 2 ++
+ kleaf/impl/constants.bzl     | 1 +
+ kleaf/impl/gki_artifacts.bzl | 3 +++
+ 3 files changed, 6 insertions(+)
+
+diff --git a/kleaf/common_kernels.bzl b/kleaf/common_kernels.bzl
+index 375a944..73d5d96 100644
+--- a/kleaf/common_kernels.bzl
++++ b/kleaf/common_kernels.bzl
+@@ -108,6 +108,8 @@ def _default_target_configs():
+         "": "67108864",
+         # Assume BUILD_GKI_BOOT_IMG_LZ4_SIZE is the following
+         "lz4": "53477376",
++        # Assume BUILD_GKI_BOOT_IMG_ZSTD_SIZE is the following
++        "zstd": "53477376",
+         # Assume BUILD_GKI_BOOT_IMG_GZ_SIZE is the following
+         "gz": "47185920",
+     }
+diff --git a/kleaf/impl/constants.bzl b/kleaf/impl/constants.bzl
+index acf3d38..e2bfc20 100644
+--- a/kleaf/impl/constants.bzl
++++ b/kleaf/impl/constants.bzl
+@@ -30,6 +30,7 @@ MODULE_OUTS_FILE_OUTPUT_GROUP = "module_outs_file"
+ DEFAULT_IMAGES = [
+     "Image",
+     "Image.lz4",
++    "Image.zstd",
+     "Image.gz",
+ ]
+ 
+diff --git a/kleaf/impl/gki_artifacts.bzl b/kleaf/impl/gki_artifacts.bzl
+index bf1865a..7d43276 100644
+--- a/kleaf/impl/gki_artifacts.bzl
++++ b/kleaf/impl/gki_artifacts.bzl
+@@ -38,6 +38,7 @@ def _gki_artifacts_impl(ctx):
+ 
+     outs = []
+     boot_lz4 = None
++    boot_zstd = None
+     boot_gz = None
+ 
+     tarball = ctx.actions.declare_file("{}/boot-img.tar.gz".format(ctx.label.name))
+@@ -59,6 +60,8 @@ def _gki_artifacts_impl(ctx):
+             boot_image = ctx.actions.declare_file("{}/boot-{}.img".format(ctx.label.name, compression))
+             if compression == "lz4":
+                 boot_lz4 = boot_image
++            elif compression == "zstd":
++                boot_zstd = boot_image
+             elif compression == "gz":
+                 boot_gz = boot_image
+             outs.append(boot_image)
+-- 
+2.42.0
+

@@ -1,0 +1,45 @@
+From ab3dc2dc9faed8fe62924d500c038996cd0af21e Mon Sep 17 00:00:00 2001
+From: "qiankun.wang" <qiankun.wang@amlogic.com>
+Date: Fri, 25 Aug 2023 12:48:23 +0800
+Subject: [PATCH] ARM: stacktrace: filter irq stacks. [1/1]
+
+PD#SWPL-101774
+
+Problem:
+save_stack_trace can't simplify all callers'
+use of stackdepot, because the value of
+"__irqentry_text_start" and "__irqentry_text_end"
+is same.
+
+Solution:
+"#define __exception_irq_entry	__irq_entry" to
+make the section ".irqentry.text" is not empty.
+
+Verify:
+THXD2
+
+Change-Id: Ib99f366955a051cb439ee9f86dfe2c667288d2d0
+Signed-off-by: qiankun.wang <qiankun.wang@amlogic.com>
+---
+ mm/kasan/kasan.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
+index 47da190423d4c..302d6a8d87f39 100644
+--- a/mm/kasan/kasan.h
++++ b/mm/kasan/kasan.h
+@@ -188,7 +188,11 @@ static inline bool kasan_requires_meta(void)
+ #define META_MEM_BYTES_PER_ROW (META_BYTES_PER_ROW * KASAN_GRANULE_SIZE)
+ #define META_ROWS_AROUND_ADDR 2
+ 
++#ifdef CONFIG_AMLOGIC_ARM_KASAN
++#define KASAN_STACK_DEPTH 32
++#else
+ #define KASAN_STACK_DEPTH 64
++#endif
+ 
+ struct kasan_track {
+ 	u32 pid;
+-- 
+2.42.0
+
