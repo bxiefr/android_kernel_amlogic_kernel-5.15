@@ -443,6 +443,11 @@ endif
 # If these three variables are not set externally, set their default values
 export COMMON_DRIVERS_DIR ?= common_drivers
 $(if $(wildcard $(srctree)/../common_drivers),$(shell ln -sfn ../common_drivers $(srctree)/$(COMMON_DRIVERS_DIR)))
+# jaws: common_drivers is vendored in this tree; let Kconfig descend into it
+# (otherwise the Amlogic symbols defined only there are silently dropped).
+ifneq ($(wildcard $(srctree)/$(COMMON_DRIVERS_DIR)/Kconfig.ext),)
+export KCONFIG_EXT_PREFIX ?= $(COMMON_DRIVERS_DIR)/
+endif
 dtstree ?= $(COMMON_DRIVERS_DIR)/arch/$(SRCARCH)/boot/dts/
 export DTC_INCLUDE ?= $(srctree)/$(COMMON_DRIVERS_DIR)/include
 # endif

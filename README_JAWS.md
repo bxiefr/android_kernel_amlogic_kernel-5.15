@@ -8,10 +8,17 @@ Why: the top-level Makefile expects `common_drivers` next to / inside the kernel
 (`dtstree = common_drivers/arch/arm64/boot/dts/`). Without it `make dtbs` fails with
 `No rule to make target '../common_drivers/arch/arm64/boot/dts//Makefile'`.
 
-Build: `./build_jaws.sh [config|dtb|image|modules|all]` (needs clang/LLVM, flex, bison, etc.)
+Build: `./build_jaws.sh [defconfig|config|dtb|image|modules|all]` (needs clang/LLVM, flex, bison, etc.)
 It repeats the fragment merge from LineageOS/android_kernel_xiaomi_jaws-build (build.config.jaws).
 
 NOT included / not covered (separate LineageOS repos, see device/amlogic/ne-common lineage.dependencies):
   gpu-modules (Mali), media-modules, bt-modules, mtk-drivers/mt7663u, and boot/vendor_boot packing.
 Status: config merge and dts include resolution were checked; a full kernel build and an actual boot on
 hardware have NOT been tested.
+
+## Using a generic CI (make <defconfig>)
+`arch/arm64/configs/amlogic_jaws_defconfig` is the pre-merged jaws config (gki_defconfig + the 6 Amlogic
+fragments used by build.config.jaws; regenerate with `./build_jaws.sh defconfig`). The top Makefile now
+defaults `KCONFIG_EXT_PREFIX=common_drivers/` when ./common_drivers exists, so a plain
+`make O=out ARCH=arm64 LLVM=1 amlogic_jaws_defconfig` keeps the ~280 AMLOGIC_* symbols that are defined
+only in common_drivers/ Kconfig (SC2 clock, pinctrl, eMMC, UART console, ...).
