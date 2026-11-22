@@ -19,6 +19,11 @@ export DTC_INCLUDE="$KS/common_drivers/include"
 [ -f "$OUT/Module.symvers" ] || { echo "HATA: $OUT/Module.symvers yok - once kernel + modules derlenmeli" >&2; exit 1; }
 [ -n "${CC:-}${LLVM:-}" ] || export LLVM=1
 
+# Vendor Makefile'lari KBUILD_EXTRA_SYMBOLS'u sabit olarak $KS/common_drivers/Module.symvers'e yonlendiriyor
+# (Kleaf'ta orada duruyor). Burada common_drivers cekirdegin icinde derlendigi icin sembolleri
+# $OUT/Module.symvers'te; yoksa modullerde CRC (modversions) eksik kalir. Sembolik baglanti ile esle.
+ln -sfn "$OUT/Module.symvers" "$KS/common_drivers/Module.symvers"
+
 mkdir -p "$DEST/modules"
 for t in "$@"; do
   case "$t" in
@@ -33,7 +38,7 @@ for t in "$@"; do
   esac
   n=0
   while IFS= read -r ko; do cp -f "$ko" "$DEST/modules/"; n=$((n+1)); done \
-    < <(find "$dir" -name '*.ko' -type f)
+    < <(find "$OUT/$dir" "$dir" -name '*.ko' -type f 2>/dev/null)
   echo "[$t] $n .ko kopyalandi -> $DEST/modules"
   [ "$n" -gt 0 ] || { echo "HATA: $t hic .ko uretmedi" >&2; exit 1; }
 done
