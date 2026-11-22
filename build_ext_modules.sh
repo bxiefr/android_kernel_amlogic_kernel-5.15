@@ -20,9 +20,10 @@ export DTC_INCLUDE="$KS/common_drivers/include"
 [ -n "${CC:-}${LLVM:-}" ] || export LLVM=1
 
 # Vendor Makefile'lari KBUILD_EXTRA_SYMBOLS'u sabit olarak $KS/common_drivers/Module.symvers'e yonlendiriyor
-# (Kleaf'ta orada duruyor). Burada common_drivers cekirdegin icinde derlendigi icin sembolleri
-# $OUT/Module.symvers'te; yoksa modullerde CRC (modversions) eksik kalir. Sembolik baglanti ile esle.
-ln -sfn "$OUT/Module.symvers" "$KS/common_drivers/Module.symvers"
+# (Kleaf'ta common_drivers ayri derlendigi icin orada duruyor). Burada common_drivers cekirdegin icinde
+# derleniyor; semboller zaten $OUT/Module.symvers'te ve kbuild onu kendisi okuyor. O yolu out/'a
+# baglamak "exported twice" modpost hatasi verir, bu yuzden bos dosya birakiyoruz (uyariyi susturur).
+rm -f "$KS/common_drivers/Module.symvers"; : > "$KS/common_drivers/Module.symvers"
 
 mkdir -p "$DEST/modules"
 for t in "$@"; do
@@ -30,10 +31,10 @@ for t in "$@"; do
     gpu)   dir=vendor/amlogic/gpu-modules/bifrost
            make -C "$dir" -j"$JOBS" KERNEL_SRC="$KS" O="$OUT" M="$dir" INCLUDE="$KS/include" \
                 GPU_DRV_VERSION="$GPU_DRV_VERSION" GPU_LOW_MEM=0 \
-                KBUILD_EXTRA_SYMBOLS="$OUT/Module.symvers" modules ;;
+                modules ;;
     media) dir=vendor/amlogic/media-modules
            make -C "$dir" -j"$JOBS" KERNEL_SRC="$KS" O="$OUT" M="$dir" INCLUDE="$KS/include" \
-                KBUILD_EXTRA_SYMBOLS="$OUT/Module.symvers" modules ;;
+                modules ;;
     *) echo "bilinmeyen hedef: $t (gpu|media)" >&2; exit 2 ;;
   esac
   n=0
